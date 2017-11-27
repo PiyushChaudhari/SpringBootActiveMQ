@@ -1,5 +1,7 @@
 package com.activemq.service;
 
+import java.util.List;
+
 import com.activemq.model.NotificationDeatils;
 
 public interface NotificationService {
@@ -15,5 +17,5 @@ public interface NotificationService {
 	 * @param applicationId
 	 * @return
 	 */
-	public NotificationDeatils receive(String applicationId);
+	public List<NotificationDeatils> receive(String applicationId);
 }
