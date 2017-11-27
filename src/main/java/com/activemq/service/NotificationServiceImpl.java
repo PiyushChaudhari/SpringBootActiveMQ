@@ -33,8 +33,10 @@ public class NotificationServiceImpl implements NotificationService {
 	public void send(NotificationDeatils notificationDeatils) {
 		logger.info("Notification Before getApplicationId:>> " + notificationDeatils.getApplicationId());
 		logger.info("Notification Before getCustomerId:>> " + notificationDeatils.getCustomerId());
-		jmsTemplate.setSessionAcknowledgeMode(Session.AUTO_ACKNOWLEDGE);
+//		jmsTemplate.setSessionAcknowledgeMode(Session.AUTO_ACKNOWLEDGE);
 		jmsTemplate.setDeliveryPersistent(false);
+		jmsTemplate.setExplicitQosEnabled(true);
+		jmsTemplate.setTimeToLive(300000L);
 		jmsTemplate.convertAndSend(notificationDeatils.getApplicationId(), notificationDeatils);
 		logger.info("Notification Send:>> " + notificationDeatils.getApplicationId());
 	}
