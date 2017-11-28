@@ -27,7 +27,7 @@ public class NotificationController {
 	@RequestMapping(value = "/send", method = RequestMethod.POST)
 	public ResponseEntity<Object> sendNotification(@RequestBody NotificationDeatils notificationDeatils) {
 		notificationService.send(notificationDeatils);
-		return new ResponseEntity<Object>("Success", HttpStatus.OK);
+		return new ResponseEntity<>("Success", HttpStatus.OK);
 	}
 
 	/**
@@ -37,7 +37,7 @@ public class NotificationController {
 	 */
 	@RequestMapping(value = "/receive/{applicationId}", method = RequestMethod.GET)
 	public ResponseEntity<Object> receiveNotification(@PathVariable("applicationId") String applicationId) {
-		return new ResponseEntity<Object>(notificationService.receive(applicationId), HttpStatus.OK);
+		return new ResponseEntity<>(notificationService.receive(applicationId), HttpStatus.OK);
 	}
 
 }

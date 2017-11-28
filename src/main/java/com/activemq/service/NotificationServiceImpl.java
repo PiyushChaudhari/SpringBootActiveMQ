@@ -33,18 +33,15 @@ public class NotificationServiceImpl implements NotificationService {
 	public void send(NotificationDeatils notificationDeatils) {
 		logger.info("Notification Before getApplicationId:>> " + notificationDeatils.getApplicationId());
 		logger.info("Notification Before getCustomerId:>> " + notificationDeatils.getCustomerId());
-//		jmsTemplate.setSessionAcknowledgeMode(Session.AUTO_ACKNOWLEDGE);
-		jmsTemplate.setDeliveryPersistent(false);
-		jmsTemplate.setExplicitQosEnabled(true);
-		jmsTemplate.setTimeToLive(300000L);
 		jmsTemplate.convertAndSend(notificationDeatils.getApplicationId(), notificationDeatils);
 		logger.info("Notification Send:>> " + notificationDeatils.getApplicationId());
 	}
 
 	@Override
 	public List<NotificationDeatils> receive(String applicationId) {
-		logger.log(Level.INFO, "Notification Before applicationId:>> %s ", applicationId);
+		logger.log(Level.INFO, () -> "Notification Before applicationId:>> " + applicationId);
 		List<NotificationDeatils> list = new ArrayList<>();
+
 		jmsTemplate.browse(new ActiveMQQueue(applicationId), new BrowserCallback<Integer>() {
 
 			Integer count = 0;
@@ -52,62 +49,51 @@ public class NotificationServiceImpl implements NotificationService {
 			@Override
 			public Integer doInJms(Session session, QueueBrowser browser) throws JMSException {
 
+				@SuppressWarnings("unchecked")
 				Enumeration<ActiveMQTextMessage> e = browser.getEnumeration();
-				
-				if ( !e.hasMoreElements() ) { 
-				    
-				} else { 
+
+				if (!e.hasMoreElements()) {
+					return count;
+				} else {
 					while (e.hasMoreElements()) {
 						count++;
-						ObjectMapper mapper = new ObjectMapper();
-						NotificationDeatils nd;
+						
 						try {
-
+							ObjectMapper mapper = new ObjectMapper();
 							ActiveMQTextMessage activeMQTextMessage = e.nextElement();
-							nd = mapper.readValue(activeMQTextMessage.getText(), NotificationDeatils.class);
-							activeMQTextMessage.acknowledge();
+							NotificationDeatils nd = mapper.readValue(activeMQTextMessage.getText(), NotificationDeatils.class);
 							list.add(nd);
-							System.out.println("Message " + count + ":>> " + nd);
-						} catch (IOException e1) {
-							e1.printStackTrace();
+							logger.info("Message " + count + ":>> " + nd);
+						} catch (IOException ex) {
+							logger.log(Level.SEVERE, "ERROR", ex);
 						}
 					}
 				}
-				
-				
+
 				logger.info("Count Info:> " + count);
 				return count;
 			}
 
 		});
-		
-		
-		// QueueViewMBean bean
-
-		// Connection connection;
-		// Session session;
-		// QueueBrowser browser;
-		// try {
-		// connection = jmsTemplate.getConnectionFactory().createConnection();
-		// session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		//
-		// Queue q = new ActiveMQQueue(applicationId);
-		//
-		// MessageConsumer consumer = session.createConsumer(q);
-		// connection.start();
-		//
-		// browser = session.createBrowser(q);
-		// Enumeration e = browser.getEnumeration();
-		//
-		// while (e.hasMoreElements()) {
-		// TextMessage message = (TextMessage) e.nextElement();
-		//
-		// System.out.println("Browse [" + e.nextElement() + "]");
-		// }
-		// } catch (JMSException e) {
-		// e.printStackTrace();
-		// }
-
+		/**
+		 * try { Connection connection =
+		 * jmsTemplate.getConnectionFactory().createConnection(); Session session =
+		 * connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		 * 
+		 * Queue q = new ActiveMQQueue(applicationId);
+		 * 
+		 * session.createConsumer(q); connection.start();
+		 * 
+		 * QueueBrowser browser = session.createBrowser(q);
+		 * 
+		 * @SuppressWarnings("unchecked") Enumeration<ActiveMQTextMessage> e =
+		 * browser.getEnumeration(); if (!e.hasMoreElements()) { return list; } else {
+		 * while (e.hasMoreElements()) { ActiveMQTextMessage message = e.nextElement();
+		 * ObjectMapper mapper = new ObjectMapper();
+		 * list.add(mapper.readValue(message.getText(), NotificationDeatils.class));
+		 * logger.info("Receive Message:>>> "+message.getText()); } } } catch
+		 * (JMSException | IOException e) { logger.log(Level.SEVERE, "ERROR", e); }
+		 */
 		return list;
 	}
 
